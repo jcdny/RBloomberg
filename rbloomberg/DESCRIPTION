@@ -8,4 +8,4 @@ Description: Fetch data from Bloomberg
 License: GPL
 Depends: rJava
 Suggests: zoo
-OS_type: windows
+

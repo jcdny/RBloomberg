@@ -1,7 +1,7 @@
 ### @export "blpConnect-definition"
 blpConnect <- function(iface="Java", log.level = "warning",
     blpapi.jar.file = NULL, throw.ticker.errors = TRUE,
-    jvm.params = NULL)
+    jvm.params = NULL, host=NULL, port=NULL)
 ### @end
 {
   valid.interfaces <- c('Java')
@@ -22,11 +22,11 @@ blpConnect <- function(iface="Java", log.level = "warning",
   }
 
   fn.name <- paste("blpConnect", iface, sep=".")
-  fn.call <- call(fn.name, log.level, blpapi.jar.file, throw.ticker.errors, jvm.params)
+  fn.call <- call(fn.name, log.level, blpapi.jar.file, throw.ticker.errors, jvm.params, host, port)
   eval(fn.call)
 }
 
-blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm.params) {
+blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm.params, host, port) {
   cat(R.version.string, "\n")
   cat("rJava Version", read.dcf(system.file("DESCRIPTION", package="rJava"))[1, "Version"], "\n")
   cat("RBloomberg Version", read.dcf(system.file("DESCRIPTION", package="RBloomberg"))[1, "Version"], "\n")
@@ -53,20 +53,30 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
   }
 
   if (is.null(blpapi.jar.file)) {
-    cat("Looking for most recent blpapi3.jar file...\n")
-    
-    java_api_dir = "C:\\blp\\API\\APIv3\\JavaAPI"
+
+
+    if (.Platform$OS.type == "unix") {
+      java_api_dir <- "/opt/local/BLP/APIv3/JavaAPI"
+      api.filename <- "blpjavaapi.jar"
+    } else {
+      java_api_dir = "C:\\blp\\API\\APIv3\\JavaAPI"
+      api.filename <- "blpapi3.jar"
+    }
+    cat("Looking for most recent",api.filename," file...\n")
+
     missing_java_api_dir_message = paste("Can't find", java_api_dir, "please confirm you have Bloomberg Version 3 Java API installed. If it's in a different location, please report this to RBloomberg package maintainer.")
-    if (!file.exists(java_api_dir)) stop(missing_java_api_dir_message)
+
+    if (!file.exists(java_api_dir))
+      stop(missing_java_api_dir_message)
 
     version.dir <- sort(list.files(java_api_dir, "^v", ignore.case=TRUE), decreasing=TRUE)[1]
     if (is.na(version.dir))
-      blpapi.jar.file <- paste(java_api_dir, "lib\\blpapi3.jar", sep="\\")
+      blpapi.jar.file <- paste(java_api_dir, "lib", api.filename, sep=.Platform$file.sep)
     else
-      blpapi.jar.file <- paste(java_api_dir, version.dir, "lib\\blpapi3.jar", sep="\\")
+      blpapi.jar.file <- paste(java_api_dir, version.dir, "lib", "blpapi3.jar", sep=.Platform$file.sep)
     end
 
-    if (!file.exists(blpapi.jar.file)){
+    if (!file.exists(blpapi.jar.file) && .Platform$OS.type == "windows"){
       blpapi.jar.file <- "C:\\blp\\API\\blpapi3.jar" # Last resort - Bloomberg website downloads get installed here.
     }
   }
@@ -74,7 +84,7 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
   if (file.exists(blpapi.jar.file)) {
     .jaddClassPath(blpapi.jar.file)
   } else {
-    stop(paste("blpapi3.jar file not found at", blpapi.jar.file, "please locate blpapi3.jar file and pass location including full path to blpConnect as blpapi.jar.file parameter. This might be a bug, if so please report it. Or try reinstalling the Java API from UPGR or WAPI pages."))
+    stop(paste(api.filename,"file not found at", blpapi.jar.file, "please locate",api.filename," file and pass location including full path to blpConnect as blpapi.jar.file parameter. This might be a bug, if so please report it. Or try reinstalling the Java API from UPGR or WAPI pages."))
   }
 
   blpwrapper.jar.file = system.file("java", "blpwrapper.jar", package="RBloomberg")
@@ -84,7 +94,7 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
   } else {
     stop(paste("blpwrapper jar file not found at", blpwrapper.jar.file, "please report this as a bug"))
   }
-  
+
   java.logging.levels = J("java/util/logging/Level")
 
   java.log.level <- switch(log.level,
@@ -95,16 +105,27 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
     stop(paste("log level ", log.level, "not recognized"))
   )
 
-  conn <- .jnew("org/findata/blpwrapper/Connection", java.log.level)
-  
+  cat("Bloomberg API Version", J("com.bloomberglp.blpapi.VersionInfo")$versionString(), "\n")
+
+  if (!is.null(host) || !is.null(port)) {
+    if (is.null(host))
+      host <- "127.0.0.1"
+    if (is.null(port))
+      port <- 8194L
+    conn <- .jnew("org/findata/blpwrapper/Connection", java.log.level, host, port)
+  } else {
+    conn <- .jnew("org/findata/blpwrapper/Connection", java.log.level)
+  }
+
   if (throw.ticker.errors) {
     throw.ticker.errors.java = .jnew("java/lang/Boolean", TRUE)$booleanValue()
   } else {
     throw.ticker.errors.java = .jnew("java/lang/Boolean", FALSE)$booleanValue()
-  } 
+  }
+
   conn$setThrowInvalidTickerError(throw.ticker.errors.java)
 
-  cat("Bloomberg API Version", J("com.bloomberglp.blpapi.VersionInfo")$versionString(), "\n")
+
 
   return(conn)
 }
