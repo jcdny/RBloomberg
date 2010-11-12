@@ -13,9 +13,9 @@ blpConnect <- function(iface="Java", log.level = "warning",
 
   if (!(iface %in% valid.interfaces)) {
     msg <- paste(
-        "Requsted interface", 
-        iface, 
-        "is not valid! Valid interfaces are ", 
+        "Requsted interface",
+        iface,
+        "is not valid! Valid interfaces are ",
         do.call("paste", as.list(valid.interfaces))
         )
     stop(msg)
@@ -39,7 +39,7 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
     cat("Using JVM parameters", jvm.params, "\n")
     jinit_value <- try(.jinit(parameters = jvm.params))
   }
-  
+
   if (jinit_value == 0) {
     cat("Java environment initialized successfully.\n")
   } else if (class(jinit_value) == "try-error") {
