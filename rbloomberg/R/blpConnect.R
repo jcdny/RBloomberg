@@ -27,21 +27,24 @@ blpConnect <- function(iface="Java", log.level = "warning",
 }
 
 blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm.params, host, port) {
-  cat(R.version.string, "\n")
-  cat("rJava Version", read.dcf(system.file("DESCRIPTION", package="rJava"))[1, "Version"], "\n")
-  cat("RBloomberg Version", read.dcf(system.file("DESCRIPTION", package="RBloomberg"))[1, "Version"], "\n")
+  chatty <- log.level %in% c("fine","finest")
 
-  library(rJava)
+  if (chatty) {
+    cat(R.version.string, "\n")
+    cat("rJava Version", read.dcf(system.file("DESCRIPTION", package="rJava"))[1, "Version"], "\n")
+    cat("RBloomberg Version", read.dcf(system.file("DESCRIPTION", package="RBloomberg"))[1, "Version"], "\n")
+  }
 
   if (is.null(jvm.params)) {
     jinit_value <- try(.jinit())
   } else {
-    cat("Using JVM parameters", jvm.params, "\n")
+    if (chatty)
+      cat("Using JVM parameters", jvm.params, "\n")
     jinit_value <- try(.jinit(parameters = jvm.params))
   }
 
   if (jinit_value == 0) {
-    cat("Java environment initialized successfully.\n")
+    if (chatty) cat("Java environment initialized successfully.\n")
   } else if (class(jinit_value) == "try-error") {
     stop("Java environment not initialized. Please consult the rJava documentation. You may need to upgrade or install Java.")
   } else if (jinit_value < 0) {
@@ -62,7 +65,8 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
       java_api_dir = "C:\\blp\\API\\APIv3\\JavaAPI"
       api.filename <- "blpapi3.jar"
     }
-    cat("Looking for most recent",api.filename," file...\n")
+    if (chatty)
+      cat("Looking for most recent",api.filename," file...\n")
 
     missing_java_api_dir_message = paste("Can't find", java_api_dir, "please confirm you have Bloomberg Version 3 Java API installed. If it's in a different location, please report this to RBloomberg package maintainer.")
 
@@ -105,7 +109,8 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
     stop(paste("log level ", log.level, "not recognized"))
   )
 
-  cat("Bloomberg API Version", J("com.bloomberglp.blpapi.VersionInfo")$versionString(), "\n")
+    if (chatty)
+      cat("Bloomberg API Version", J("com.bloomberglp.blpapi.VersionInfo")$versionString(), "\n")
 
   if (!is.null(host) || !is.null(port)) {
     if (is.null(host))
