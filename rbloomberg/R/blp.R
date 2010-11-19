@@ -36,6 +36,8 @@ bdp <- function(conn, securities, fields,
     option_names = NULL, option_values = NULL)
 ### @end
 {
+  stopifnot(is(conn,"jobjRef"))
+
   securities <- .jarray(securities)
   fields <- .jarray(fields)
 
@@ -68,6 +70,8 @@ bds <- function(conn, securities, fields,
     option_names = NULL, option_values = NULL)
 ### @end
 {
+  stopifnot(is(conn,"jobjRef"))
+
   # Pass each security+field separately. Merge resulting data frames
   # if the results are conformal, raise an error if they're not.
   stored.names <- NULL
@@ -128,6 +132,8 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
     include.non.trading.days = NULL)
 ### @end
 {
+  stopifnot(is(conn,"jobjRef"))
+
   fields <- .jarray(fields)
 
   if (!is.null(override_fields)) {
@@ -246,6 +252,7 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
 bar <- function(conn, security, field, start_date_time, end_date_time, interval)
 ### @end
 {
+  stopifnot(is(conn,"jobjRef"))
   result <- conn$bar(security, field, start_date_time, end_date_time, interval)
   return(process.result(result, "first.column"))
 }
@@ -255,6 +262,7 @@ tick <- function(conn, security, fields, start_date_time, end_date_time,
     option_names = NULL, option_values = NULL)
 ### @end
 {
+  stopifnot(is(conn,"jobjRef"))
   fields <- .jarray(fields);
 
   if (is.null(option_names)) {
