@@ -363,7 +363,6 @@ bar <- function(conn, security, field, start_date_time, end_date_time, interval)
 ##' @param fields vector of field mnemonics
 ##' @param start_date_time date object
 ##' @param end_date_time date object
-##' @param interval bar interval
 ##' @param option_names vector of retrieval options
 ##' @param option_values vector of option values
 ##' @return a data frame

@@ -25,7 +25,7 @@ blpFieldInfo <- function(conn, fields) {
 ##' @seealso blpFieldInfo
 ##' 
 ##' @export
-field.description <- function(conn, mnemonic) {
+field.description <- function(conn, fields) {
   as.vector(blpFieldInfo(conn, fields)["description"])
 }
 
