@@ -1,8 +1,25 @@
-##' Deprecated function
+##' R interface to the Bloomberg API.
+##'
+##' RBloomberg provides R wrappers for the Bloomberg v3 API.  The
+##' functions \code{\link{bdp}}, \code{\link{bds}}, \code{\link{bdh}},
+##' \code{\link{bar}},  and \code{\link{tick}} are implemented.  All
+##' return results as data frames.
+##'
+##' Connections are created with \code{\link{blpConnect}} and use the Java API.
+##'
+##' @docType package
+##' @name RBloomberg
+##' @aliases RBloomberg package-RBloomberg
+NULL
+
+
+
+##' Deprecated.
+##'
+##' \code{blp} and \code{blpGetData} are deprecated in favour of the functions \code{\link{bdp}}, \code{\link{bdh}}, \code{\link{tick}}, \code{\link{bar}}.
 ##'
 ##' @name blp
 ##' @aliases blp blpGetData
-##' @seealso \code{\link{bdp}}, \code{\link{bdh}}, \code{\link{tick}}, \code{\link{bar}}
 ##'
 ##' @export blp blpGetData
 blp <- blpGetData <- function(conn, securities, fields, start = NULL, end = NULL,
@@ -31,7 +48,7 @@ blp <- blpGetData <- function(conn, securities, fields, start = NULL, end = NULL
 ##' Overrides which are dates must be passed in "YYYYMMDD" format as
 ##' per Bloomberg Version 3 API.
 ##'
-##' @param conn Connection object
+##' @param conn a Bloomberg connection object
 ##' @param securities A single ticker string or a vector of tickers.
 ##' @param fields A single field string or a vector of field names.
 ##' @param override_fields vector of fields to overide
@@ -75,20 +92,18 @@ bdp <- function(conn, securities, fields,
   return(process.result(result, "java"))
 }
 
-##' Retrieve Bloomberg bulk data field.
+##' Retrieve Bloomberg bulk data fields.
 ##'
-##' Pass either a single security/field or a vector of securities and
-##' fields. Objects are converted with .jarray before being passed to
-##' the Java wrapper which accesses the Bloomberg API and returns the
-##' result.
+##' May pass either a single security/field or a vector of securities and
+##' fields.
+##'
+##' If passed multiple securities or fields they are queried per security+field and
+##' merged into a single data frame. Raise an error if the results are not conformal.
 ##'
 ##' Overrides which are dates must be passed in "YYYYMMDD" format as
 ##' per Bloomberg Version 3 API.
 ##'
-##' Pass each security+field separately. Merge resulting data frames
-##' if the results are conformal, raise an error if they're not.
-##'
-##' @param conn Connection object
+##' @param conn a Bloomberg connection object
 ##' @param securities A single ticker string or a vector of tickers.
 ##' @param fields A single field string or a vector of field names.
 ##' @param override_fields vector of fields to overide
@@ -170,7 +185,7 @@ bds <- function(conn, securities, fields,
 ##' Pass each security+field separately. Merge resulting data frames
 ##' if the results are conformal, raise an error if they're not.
 ##'
-##' @param conn Connection object
+##' @param conn a Bloomberg connection object
 ##' @param securities A single ticker string or a vector of tickers.
 ##' @param fields A single field string or a vector of field names.
 ##' @param start_date date object, required
@@ -309,22 +324,11 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
   }
 }
 
-##' Retrieve Bloomberg minute bars
-##'
-##' Pass either a single security/field or a vector of securities and
-##' fields. Objects are converted with .jarray before being passed to
-##' the Java wrapper which accesses the Bloomberg API and returns the
-##' result.
-##'
-##' Overrides which are dates must be passed in "YYYYMMDD" format as
-##' per Bloomberg Version 3 API.
-##'
-##' Pass each security+field separately. Merge resulting data frames
-##' if the results are conformal, raise an error if they're not.
+##' Retrieve Bloomberg minute bars.
 ##'
 ##' @seealso \code{\link{tick}}
 ##'
-##' @param conn Connection object
+##' @param conn a Bloomberg connection object
 ##' @param security bloomberg ticker
 ##' @param field field mnemonic
 ##' @param start_date_time date object
@@ -342,23 +346,11 @@ bar <- function(conn, security, field, start_date_time, end_date_time, interval)
   return(process.result(result, "first.column"))
 }
 
-##' Retrieve Bloomberg tick history
-##' Retrieve Bloomberg minute bars
-##'
-##' Pass either a single security/field or a vector of securities and
-##' fields. Objects are converted with .jarray before being passed to
-##' the Java wrapper which accesses the Bloomberg API and returns the
-##' result.
-##'
-##' Overrides which are dates must be passed in "YYYYMMDD" format as
-##' per Bloomberg Version 3 API.
-##'
-##' Pass each security+field separately. Merge resulting data frames
-##' if the results are conformal, raise an error if they're not.
+##' Retrieve Bloomberg tick history.
 ##'
 ##' @seealso \code{\link{bar}}
 ##'
-##' @param conn Connection object
+##' @param conn a Bloomberg connection object
 ##' @param security bloomberg ticker
 ##' @param fields vector of field mnemonics
 ##' @param start_date_time date object
@@ -385,6 +377,8 @@ tick <- function(conn, security, fields, start_date_time, end_date_time,
   return(process.result(result))
 }
 
+##' Process a result set from \code{conn$\emph{function}}
+##'
 ##' Given a result set, process it into a data frame.
 ##'
 ##' @param result the return from the java method
@@ -407,7 +401,10 @@ process.result <- function(result, row.name.source = "none") {
   convert.data.to.type(matrix.data, result$getDataTypes())
 }
 
-##' Take a matrix and coerce columns to the passed vector of types
+##' Convert a matrix to a data frame.
+##'
+##' Take results as matrix and a vector of data types and coerce to a
+##' data frame with columns of the specified types.
 ##'
 ##' @param matrix.data the matrix from the bloomberg result
 ##' @param data_types the data types as returned by \code{result$getDataTypes()}
@@ -422,10 +419,13 @@ convert.data.to.type <- function(matrix.data, data_types) {
   }
 }
 
-##' Take a data frame and coerce columns to the passed vector of types
+##' Convert columns of a data frame to the specified types.
 ##'
 ##' @param df.data the bloomberg result set, converted to a data frame
-##' @param data_types the data types as returned by \code{result$getDataTypes()}
+##' @param data_types the data types as returned by
+##' \code{result$getDataTypes()}.  Types are \code{FLOAT64},
+##' \code{INT32}, \code{INT64}, \code{STRING}, \code{DATE},
+##' \code{DATETIME}, \code{NOT_APPLICABLE}, \code{CHAR}.
 ##'
 ##' @keywords internal
 convert.to.type <- function(df.data, data_types) {
@@ -440,7 +440,11 @@ convert.to.type <- function(df.data, data_types) {
                          DATE = string_values,
                          DATETIME = string_values,
                          NOT_APPLICABLE = string_values,
-                         CHAR = string_values == 'Y', # Assumes CHAR is only used for Boolean values and can be trusted to return 'Y' or 'N'.
+                         CHAR = string_values == 'Y',
+                                        # Assumes CHAR is only used
+                                        # for Boolean values and can
+                                        # be trusted to return 'Y' or
+                                        # 'N'.
                          stop(paste("unknown type", data_types[i]))
                          )
     df.data[,i] <- new_values
@@ -448,4 +452,5 @@ convert.to.type <- function(df.data, data_types) {
 
   return(df.data)
 }
+
 

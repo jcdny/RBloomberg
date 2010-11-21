@@ -3,7 +3,7 @@
 ##' @param conn a Bloomberg connection object
 ##' @param fields a vector of field mnemonics
 ##'
-##' @seealso field.description
+##' @seealso \code{\link{field.description}}
 ##' @export
 blpFieldInfo <- function(conn, fields) {
   fields <- .jarray(fields)
@@ -22,8 +22,8 @@ blpFieldInfo <- function(conn, fields) {
 ##' @param conn a Bloomberg connection object
 ##' @param fields a vector of field mnemonics
 ##'
-##' @seealso blpFieldInfo
-##' 
+##' @seealso \code{\link{blpFieldInfo}}
+##'
 ##' @export
 field.description <- function(conn, fields) {
   as.vector(blpFieldInfo(conn, fields)["description"])

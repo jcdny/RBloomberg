@@ -1,3 +1,5 @@
+##' Connect to the Bloomberg server.
+##' 
 ##' Create a the connection to Bloomberg by default on the local
 ##' machine or to a SAPI server.  When the connection is created the
 ##' jvm is also initialized.
