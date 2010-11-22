@@ -1,6 +1,30 @@
-blp <- function(conn, securities, fields, start = NULL, end = NULL, 
-    barsize = NULL, barfields = NULL, retval = NULL, 
-    override_fields = NULL, overrides = NULL, currency = NULL) { 
+##' R interface to the Bloomberg API.
+##'
+##' RBloomberg provides R wrappers for the Bloomberg v3 API.  The
+##' functions \code{\link{bdp}}, \code{\link{bds}}, \code{\link{bdh}},
+##' \code{\link{bar}},  and \code{\link{tick}} are implemented.  All
+##' return results as data frames.
+##'
+##' Connections are created with \code{\link{blpConnect}} and use the Java API.
+##'
+##' @docType package
+##' @name RBloomberg
+##' @aliases RBloomberg package-RBloomberg
+NULL
+
+
+
+##' Deprecated.
+##'
+##' \code{blp} and \code{blpGetData} are deprecated in favour of the functions \code{\link{bdp}}, \code{\link{bdh}}, \code{\link{tick}}, \code{\link{bar}}.
+##'
+##' @name blp
+##' @aliases blp blpGetData
+##'
+##' @export blp blpGetData
+blp <- blpGetData <- function(conn, securities, fields, start = NULL, end = NULL,
+                              barsize = NULL, barfields = NULL, retval = NULL,
+                              override_fields = NULL, overrides = NULL, currency = NULL) {
   if (is.null(start)) {
     stop("The blp() function has been removed. Please consult documentation for the bdp() function, or the bds() function for making bulk data calls.")
   } else {
@@ -14,28 +38,32 @@ blp <- function(conn, securities, fields, start = NULL, end = NULL,
   }
 }
 
-blpGetData <- function(conn, securities, fields, start = NULL, end = NULL, 
-    barsize = NULL, barfields = NULL, retval = NULL, 
-    override_fields = NULL, overrides = NULL, currency = NULL) { 
-  if (is.null(start)) {
-    stop("The blpGetData() function has been removed. Please consult documentation for the bdp() function, or the bds() function for making bulk data calls.")
-  } else {
-    if (is.null(barsize)){
-      stop("The blpGetData() function has been removed. Please consult documentation for the bdh() function.")
-    } else if (barsize == 0) {
-      stop("The blpGetData() function has been removed. Please consult documentation for the tick() function.")
-    } else {
-      stop("The blpGetData() function has been removed. Please consult documentation for the bar() function.")
-    }
-  }
-}
-
-### @export "bdp-definition"
+##' Retrieve Bloomberg reference data.
+##'
+##' Pass either a single security/field or a vector of securities and
+##' fields. Objects are converted with .jarray before being passed to
+##' the Java wrapper which accesses the Bloomberg API and returns the
+##' result.
+##'
+##' Overrides which are dates must be passed in "YYYYMMDD" format as
+##' per Bloomberg Version 3 API.
+##'
+##' @param conn a Bloomberg connection object
+##' @param securities A single ticker string or a vector of tickers.
+##' @param fields A single field string or a vector of field names.
+##' @param override_fields vector of fields to overide
+##' @param override_values values corresponding to override fields
+##' @param option_names vector of retrieval options
+##' @param option_values vector of option values
+##'
+##' @return a data frame
+##' @author Ana Nelson \email{ana@@ananelson.com}
+##'
+##' @export
 bdp <- function(conn, securities, fields,
-    override_fields = NULL, override_values = NULL, 
-    option_names = NULL, option_values = NULL)
-### @end
-{
+                override_fields = NULL, override_values = NULL,
+                option_names = NULL, option_values = NULL) {
+
   stopifnot(is(conn,"jobjRef"))
 
   securities <- .jarray(securities)
@@ -64,16 +92,36 @@ bdp <- function(conn, securities, fields,
   return(process.result(result, "java"))
 }
 
-### @export "bds-definition"
-bds <- function(conn, securities, fields, 
-    override_fields = NULL, override_values = NULL, 
-    option_names = NULL, option_values = NULL)
-### @end
-{
+##' Retrieve Bloomberg bulk data fields.
+##'
+##' May pass either a single security/field or a vector of securities and
+##' fields.
+##'
+##' If passed multiple securities or fields they are queried per security+field and
+##' merged into a single data frame. Raise an error if the results are not conformal.
+##'
+##' Overrides which are dates must be passed in "YYYYMMDD" format as
+##' per Bloomberg Version 3 API.
+##'
+##' @param conn a Bloomberg connection object
+##' @param securities A single ticker string or a vector of tickers.
+##' @param fields A single field string or a vector of field names.
+##' @param override_fields vector of fields to overide
+##' @param override_values values corresponding to override fields
+##' @param option_names vector of retrieval options
+##' @param option_values vector of option values
+##'
+##' @return a data frame
+##' @author Ana Nelson \email{ana@@ananelson.com}
+##'
+##' @export
+bds <- function(conn, securities, fields,
+                override_fields = NULL, override_values = NULL,
+                option_names = NULL, option_values = NULL) {
   stopifnot(is(conn,"jobjRef"))
 
-  # Pass each security+field separately. Merge resulting data frames
-  # if the results are conformal, raise an error if they're not.
+  ## Pass each security+field separately. Merge resulting data frames
+  ## if the results are conformal, raise an error if they're not.
   stored.names <- NULL
   combined <- NULL
 
@@ -105,7 +153,7 @@ bds <- function(conn, securities, fields,
       result <- process.result(result) # Convert to data frame.
 
       if (combine.multiple) {
-        # Prepend data frame with new row containing security ticker.
+        ## Prepend data frame with new row containing security ticker.
         result <- data.frame(ticker = security, result)
       }
 
@@ -124,14 +172,42 @@ bds <- function(conn, securities, fields,
   return(combined)
 }
 
-### @export "bdh-definition"
-bdh <- function(conn, securities, fields, start_date, end_date = NULL, 
-    override_fields = NULL, override_values = NULL, 
-    option_names = NULL, option_values = NULL,
-    always.display.tickers = FALSE, dates.as.row.names = (length(securities) == 1),
-    include.non.trading.days = NULL)
-### @end
-{
+##' Retrieve Bloomberg historical data.
+##'
+##' Pass either a single security/field or a vector of securities and
+##' fields. Objects are converted with .jarray before being passed to
+##' the Java wrapper which accesses the Bloomberg API and returns the
+##' result.
+##'
+##' Overrides which are dates must be passed in "YYYYMMDD" format as
+##' per Bloomberg Version 3 API.
+##'
+##' Pass each security+field separately. Merge resulting data frames
+##' if the results are conformal, raise an error if they're not.
+##'
+##' @param conn a Bloomberg connection object
+##' @param securities A single ticker string or a vector of tickers.
+##' @param fields A single field string or a vector of field names.
+##' @param start_date date object, required
+##' @param end_date date object, optional
+##' @param override_fields vector of fields to overide
+##' @param override_values values corresponding to override fields
+##' @param option_names vector of retrieval options
+##' @param option_values vector of option values
+##' @param always.display.tickers force tickers to be included even if only passing one security
+##' @param dates.as.row.names default TRUE if 1 ticker passed
+##' @param include.non.trading.days TRUE includes records for all calendar days
+##'
+##' @return a data frame
+##' @author Ana Nelson \email{ana@@ananelson.com}
+##'
+##' @export
+bdh <- function(conn, securities, fields, start_date, end_date = NULL,
+                override_fields = NULL, override_values = NULL,
+                option_names = NULL, option_values = NULL,
+                always.display.tickers = FALSE, dates.as.row.names = (length(securities) == 1),
+                include.non.trading.days = NULL) {
+
   stopifnot(is(conn,"jobjRef"))
 
   fields <- .jarray(fields)
@@ -155,9 +231,9 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
   }
 
   if (is.null(include.non.trading.days)) {
-    # We don't want to call 'if' on a NULL value.
+    ## We don't want to call 'if' on a NULL value.
   } else if (include.non.trading.days) {
-    option_names <- c("nonTradingDayFillOption", "nonTradingDayFillMethod", option_names) 
+    option_names <- c("nonTradingDayFillOption", "nonTradingDayFillMethod", option_names)
     option_values <- c("ALL_CALENDAR_DAYS", "NIL_VALUE", option_values)
   }
 
@@ -216,10 +292,10 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
 
     if (is.null(combined)) { # First time through loop...
       if (combine.multiple) {
-        # Allocate storage for expected number of responses.
+        ## Allocate storage for expected number of responses.
         combined <- matrix(, ncol=dim(matrix.data)[2], nrow=num.dates * num.tickers)
 
-        # Store this iteration's results
+        ## Store this iteration's results
         combined[s:f,] <- matrix.data
       } else { # We're only looping once...
         combined <- matrix.data
@@ -248,20 +324,46 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
   }
 }
 
-### @export "bar-definition"
-bar <- function(conn, security, field, start_date_time, end_date_time, interval)
-### @end
-{
+##' Retrieve Bloomberg minute bars.
+##'
+##' @seealso \code{\link{tick}}
+##'
+##' @param conn a Bloomberg connection object
+##' @param security bloomberg ticker
+##' @param field field mnemonic
+##' @param start_date_time date object
+##' @param end_date_time date object
+##' @param interval bar interval
+##'
+##' @return a data frame
+##'
+##' @author Ana Nelson \email{ana@@ananelson.com}
+##'
+##' @export
+bar <- function(conn, security, field, start_date_time, end_date_time, interval) {
   stopifnot(is(conn,"jobjRef"))
   result <- conn$bar(security, field, start_date_time, end_date_time, interval)
   return(process.result(result, "first.column"))
 }
 
-### @export "tick-definition"
-tick <- function(conn, security, fields, start_date_time, end_date_time, 
-    option_names = NULL, option_values = NULL)
-### @end
-{
+##' Retrieve Bloomberg tick history.
+##'
+##' @seealso \code{\link{bar}}
+##'
+##' @param conn a Bloomberg connection object
+##' @param security bloomberg ticker
+##' @param fields vector of field mnemonics
+##' @param start_date_time date object
+##' @param end_date_time date object
+##' @param option_names vector of retrieval options
+##' @param option_values vector of option values
+##' @return a data frame
+##'
+##' @author Ana Nelson \email{ana@@ananelson.com}
+##'
+##' @export
+tick <- function(conn, security, fields, start_date_time, end_date_time,
+                 option_names = NULL, option_values = NULL) {
   stopifnot(is(conn,"jobjRef"))
   fields <- .jarray(fields);
 
@@ -275,22 +377,38 @@ tick <- function(conn, security, fields, start_date_time, end_date_time,
   return(process.result(result))
 }
 
+##' Process a result set from \code{conn$\emph{function}}
+##'
+##' Given a result set, process it into a data frame.
+##'
+##' @param result the return from the java method
+##' @param row.name.source from \code{"java"},\code{"first.column"}, or \code{"none"}
+##'
+##' @keywords internal
 process.result <- function(result, row.name.source = "none") {
   matrix.data <- result$getData()
   if (is.null(matrix.data)) return(NULL)
 
   rownames(matrix.data) <- switch(row.name.source,
-      java = result$getRowNames(),
-      first.column = matrix.data[,1],
-      none = NULL,
-      stop(paste("don't know how to handle this row name source", row.name.source))
-      )
+                                  java = result$getRowNames(),
+                                  first.column = matrix.data[,1],
+                                  none = NULL,
+                                  stop(paste("don't know how to handle this row name source", row.name.source))
+                                  )
 
   colnames(matrix.data) <- result$getColumnNames()
 
   convert.data.to.type(matrix.data, result$getDataTypes())
 }
 
+##' Convert a matrix to a data frame.
+##'
+##' Take results as matrix and a vector of data types and coerce to a
+##' data frame with columns of the specified types.
+##'
+##' @param matrix.data the matrix from the bloomberg result
+##' @param data_types the data types as returned by \code{result$getDataTypes()}
+##' @keywords internal
 convert.data.to.type <- function(matrix.data, data_types) {
   df.data <- as.data.frame(matrix.data)
 
@@ -301,24 +419,38 @@ convert.data.to.type <- function(matrix.data, data_types) {
   }
 }
 
+##' Convert columns of a data frame to the specified types.
+##'
+##' @param df.data the bloomberg result set, converted to a data frame
+##' @param data_types the data types as returned by
+##' \code{result$getDataTypes()}.  Types are \code{FLOAT64},
+##' \code{INT32}, \code{INT64}, \code{STRING}, \code{DATE},
+##' \code{DATETIME}, \code{NOT_APPLICABLE}, \code{CHAR}.
+##'
+##' @keywords internal
 convert.to.type <- function(df.data, data_types) {
   for (i in 1:(dim(df.data)[2])) {
     string_values = as.vector(df.data[,i])
 
     new_values <- switch(data_types[i],
-        FLOAT64 = as.numeric(string_values),
-        INT32 = as.numeric(string_values),
-        INT64 = as.numeric(string_values),
-        STRING = string_values,
-        DATE = string_values,
-        DATETIME = string_values,
-        NOT_APPLICABLE = string_values,
-        CHAR = string_values == 'Y', # Assumes CHAR is only used for Boolean values and can be trusted to return 'Y' or 'N'.
-        stop(paste("unknown type", data_types[i]))
-        )
+                         FLOAT64 = as.numeric(string_values),
+                         INT32 = as.numeric(string_values),
+                         INT64 = as.numeric(string_values),
+                         STRING = string_values,
+                         DATE = string_values,
+                         DATETIME = string_values,
+                         NOT_APPLICABLE = string_values,
+                         CHAR = string_values == 'Y',
+                                        # Assumes CHAR is only used
+                                        # for Boolean values and can
+                                        # be trusted to return 'Y' or
+                                        # 'N'.
+                         stop(paste("unknown type", data_types[i]))
+                         )
     df.data[,i] <- new_values
   }
 
   return(df.data)
 }
+
 

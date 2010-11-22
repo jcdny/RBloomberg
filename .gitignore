@@ -2,7 +2,8 @@ build
 tmp
 *.tar
 *.tar.gz
+*.Rcheck
+*.roxygen
 *~
-#*
 .#*
-
+\#*

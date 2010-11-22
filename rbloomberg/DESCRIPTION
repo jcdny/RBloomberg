@@ -1,11 +1,9 @@
 Package: RBloomberg
-Version: 0.4-145
+Version: 0.5-0
 Date: 2010-09-29
 Title: R/Bloomberg
 Author: Robert Sams <robert@sanctumfi.com>
 Maintainer: Ana Nelson <ana@ananelson.com>
-Description: Fetch data from Bloomberg
+Description: Fetch data from Bloomberg using the Bloomberg Java APIv3.
 License: GPL
 Depends: rJava
-Suggests: zoo
-

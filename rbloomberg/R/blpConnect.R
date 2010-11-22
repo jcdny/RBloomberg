@@ -1,9 +1,27 @@
-### @export "blpConnect-definition"
+##' Connect to the Bloomberg server.
+##' 
+##' Create a the connection to Bloomberg by default on the local
+##' machine or to a SAPI server.  When the connection is created the
+##' jvm is also initialized.
+##'
+##' @param iface  The API interface to use.  Currently only \code{"Java"} supported
+##' @param log.level the log4j logging level from \code{"finest"}, \code{"fine"}, \code{"info"}, \code{"warning"}
+##' @param blpapi.jar.file explicit path the the Bloomberg java API
+##'   file.  The code looks for the jar file in likely locations
+##'   \code{/opt/local/BLP/APIv3/JavaAPI/blpjavaapi.jar} on unix and
+##'   \code{C:\\blp\\API\\APIv3\\JavaAPI\\VERSION\\blpapi3.jar} on
+##'   windows.
+##' @param throw.ticker.errors throw an error for invalid tickers (default \code{TRUE})
+##' @param jvm.params parameters passed to the jvm as a vector of strings (eg \code{jvm.params=c("-Xmx512m","-Xloggc:jvmgc.log")})
+##' @param host host to connect to (for SAPI)
+##' @param port port to connect to (for SAPI, default 8194)
+##'
+##' @seealso \code{\link{blpDisconnect}}
+##'
+##' @export
 blpConnect <- function(iface="Java", log.level = "warning",
-    blpapi.jar.file = NULL, throw.ticker.errors = TRUE,
-    jvm.params = NULL, host=NULL, port=NULL)
-### @end
-{
+                       blpapi.jar.file = NULL, throw.ticker.errors = TRUE,
+                       jvm.params = NULL, host=NULL, port=NULL) {
   valid.interfaces <- c('Java')
   future.interfaces <- c('C')
 
@@ -13,11 +31,11 @@ blpConnect <- function(iface="Java", log.level = "warning",
 
   if (!(iface %in% valid.interfaces)) {
     msg <- paste(
-        "Requsted interface",
-        iface,
-        "is not valid! Valid interfaces are ",
-        do.call("paste", as.list(valid.interfaces))
-        )
+                 "Requsted interface",
+                 iface,
+                 "is not valid! Valid interfaces are ",
+                 do.call("paste", as.list(valid.interfaces))
+                 )
     stop(msg)
   }
 
@@ -26,6 +44,18 @@ blpConnect <- function(iface="Java", log.level = "warning",
   eval(fn.call)
 }
 
+##' Connect to the server via the Java API library.  JVM initialized as a side effect.
+##'
+##' @param log.level the log4j logging level; \code{"finest"}, \code{"fine"}, \code{"info"}, \code{"warning"}.
+##' @param blpapi.jar.file explicit path the the Bloomberg java API file. 
+##' @param throw.ticker.errors throw an error for invalid tickers (default \code{TRUE})
+##' @param jvm.params parameters passed to the jvm as a vector of strings (for example \code{jvm.params=c("-Xmx512m", "-Xloggc:jvmgc.log")})
+##' @param host host to connect to (for SAPI)
+##' @param port port to connect to (for SAPI, default 8194)
+##'
+##' @seealso blpConnect
+##' 
+##' @keywords internal
 blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm.params, host, port) {
   chatty <- log.level %in% c("fine","finest")
 
@@ -56,8 +86,6 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
   }
 
   if (is.null(blpapi.jar.file)) {
-
-
     if (.Platform$OS.type == "unix") {
       java_api_dir <- "/opt/local/BLP/APIv3/JavaAPI"
       api.filename <- "blpjavaapi.jar"
@@ -102,15 +130,15 @@ blpConnect.Java <- function(log.level, blpapi.jar.file, throw.ticker.errors, jvm
   java.logging.levels = J("java/util/logging/Level")
 
   java.log.level <- switch(log.level,
-    finest = java.logging.levels$FINEST,
-    fine = java.logging.levels$FINE,
-    info = java.logging.levels$INFO,
-    warning = java.logging.levels$WARNING,
-    stop(paste("log level ", log.level, "not recognized"))
-  )
+                           finest = java.logging.levels$FINEST,
+                           fine = java.logging.levels$FINE,
+                           info = java.logging.levels$INFO,
+                           warning = java.logging.levels$WARNING,
+                           stop(paste("log level ", log.level, "not recognized"))
+                           )
 
-    if (chatty)
-      cat("Bloomberg API Version", J("com.bloomberglp.blpapi.VersionInfo")$versionString(), "\n")
+  if (chatty)
+    cat("Bloomberg API Version", J("com.bloomberglp.blpapi.VersionInfo")$versionString(), "\n")
 
   if (!is.null(host) || !is.null(port)) {
     if (is.null(host))

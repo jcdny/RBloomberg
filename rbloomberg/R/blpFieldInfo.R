@@ -1,3 +1,10 @@
+##' Get the field metadata from the bloomberg data dictionary
+##'
+##' @param conn a Bloomberg connection object
+##' @param fields a vector of field mnemonics
+##'
+##' @seealso \code{\link{field.description}}
+##' @export
 blpFieldInfo <- function(conn, fields) {
   fields <- .jarray(fields)
   result <- conn$fieldInfo(fields)
@@ -6,11 +13,19 @@ blpFieldInfo <- function(conn, fields) {
   colnames(l) <- result$getColumnNames()
   rownames(l) <- result$getData()[,2]
   df.data <- as.data.frame(l)
-  
+
   return(df.data)
 }
 
-field.description <- function(conn, mnemonic) {
+##' Get the field descriptions from the bloomberg data dictionary
+##'
+##' @param conn a Bloomberg connection object
+##' @param fields a vector of field mnemonics
+##'
+##' @seealso \code{\link{blpFieldInfo}}
+##'
+##' @export
+field.description <- function(conn, fields) {
   as.vector(blpFieldInfo(conn, fields)["description"])
 }
 
