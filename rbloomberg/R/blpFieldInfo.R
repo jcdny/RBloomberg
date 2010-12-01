@@ -6,12 +6,14 @@
 ##' @seealso \code{\link{field.description}}
 ##' @export
 blpFieldInfo <- function(conn, fields) {
-  fields <- .jarray(fields)
-  result <- conn$fieldInfo(fields)
+  stopifnot(is(conn,"jobjRef"))
+
+  jfields <- .jarray(fields)
+  result <- conn$fieldInfo(jfields)
 
   l <- result$getData()
   colnames(l) <- result$getColumnNames()
-  rownames(l) <- result$getData()[,2]
+  rownames(l) <- fields
   df.data <- as.data.frame(l)
 
   return(df.data)

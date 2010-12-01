@@ -66,6 +66,15 @@ bdp <- function(conn, securities, fields,
 
   stopifnot(is(conn,"jobjRef"))
 
+  if (missing(fields) || is.null(fields)) {
+    warning("fields list empty")
+    return(NULL)
+  }
+  if (missing(securities) || is.null(securities)) {
+    warning("securties list empty")
+    return(NULL)
+  }
+
   securities <- .jarray(securities)
   fields <- .jarray(fields)
 
@@ -209,6 +218,19 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
                 include.non.trading.days = NULL) {
 
   stopifnot(is(conn,"jobjRef"))
+
+  if (missing(start_date) || is.null(start_date)) {
+    warning("start_date must be provided")
+    return(NULL)
+  }
+  if (missing(fields) || is.null(fields)) {
+    warning("fields list empty")
+    return(NULL)
+  }
+  if (missing(securities) || is.null(securities)) {
+    warning("securties list empty")
+    return(NULL)
+  }
 
   fields <- .jarray(fields)
 
