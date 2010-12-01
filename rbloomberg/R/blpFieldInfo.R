@@ -8,12 +8,21 @@
 blpFieldInfo <- function(conn, fields) {
   stopifnot(is(conn,"jobjRef"))
 
+  ## make fields unique since otherwise dataframe has
+  ## dup rownames
+  fields <- unique(toupper(fields))
+
   jfields <- .jarray(fields)
   result <- conn$fieldInfo(jfields)
-
   l <- result$getData()
   colnames(l) <- result$getColumnNames()
-  rownames(l) <- fields
+
+  ## Here we just map missing mnemonics to the NA rows and assume we
+  ## are 1-1.  Not sure if thats a good assumption
+  rows <- l[,"mnemonic"]
+  rows[which(is.na(rows))] <- fields[(! fields %in% l[,"mnemonic"] )]
+  rownames(l) <- rows
+
   df.data <- as.data.frame(l)
 
   return(df.data)
