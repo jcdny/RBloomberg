@@ -4,6 +4,9 @@ Date: 2010-09-29
 Title: R/Bloomberg
 Author: Robert Sams <robert@sanctumfi.com>
 Maintainer: Ana Nelson <ana@ananelson.com>
-Description: Fetch data from Bloomberg using the Bloomberg Java APIv3.
+Description: Fetch data from Bloomberg using the Bloomberg
+    Java APIv3.
 License: GPL
 Depends: rJava
+Collate: 'blpConnect.R' 'blpDisconnect.R' 'blpFieldInfo.R'
+    'blp.R'
