@@ -234,7 +234,7 @@ public class Connection {
 
         String false_value_elements[] = {"false", "FALSE", "False", "f", "F"};
         HashSet false_values = new HashSet(Arrays.asList(false_value_elements));
-        
+
         if (true_values.contains(option_values[i])) {
           option_value = true;
         } else if (false_values.contains(option_values[i])) {
@@ -292,15 +292,16 @@ public class Connection {
       Message message = msgIter.next();
       Element response = message.asElement();
 
-      if (response.name().equals("SessionStarted")) {
-        logger.info("Session Started");
+      if (response.name().equals("SessionConnectionUp")) {
+          logger.info("Connection Up");
+      } else if (response.name().equals("SessionStarted")) {
+          logger.info("Session Started");
       } else if (response.name().equals("SessionStartupFailure")) {
-        logger.warning("" + response);
-        Element reason = response.getElement(0);
-        throw new WrapperException("Session not started because: " + reason.getElementAsString("description"));
+          logger.warning("" + response);
+          Element reason = response.getElement(0);
+          throw new WrapperException("Session not started because: " + reason.getElementAsString("description"));
       } else {
-        logger.warning("" + response);
-        throw new WrapperException("Session not started. See logs. Please report this to blpwrapper maintainer.");
+          logger.warning("unkown response: " + response);
       }
     }
   }

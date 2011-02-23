@@ -21,7 +21,7 @@
 ##' @export
 blpConnect <- function(iface="Java", log.level = "warning",
                        blpapi.jar.file = NULL, throw.ticker.errors = TRUE,
-                       jvm.params = NULL, host=NULL, port=NULL) {
+                       jvm.params = "-Xmx512m", host=NULL, port=NULL) {
   valid.interfaces <- c('Java')
   future.interfaces <- c('C')
 
