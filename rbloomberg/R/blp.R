@@ -13,7 +13,6 @@
 NULL
 
 
-
 ##' Deprecated.
 ##'
 ##' \code{blp} and \code{blpGetData} are deprecated in favour of the functions \code{\link{bdp}}, \code{\link{bdh}}, \code{\link{tick}}, \code{\link{bar}}.
@@ -297,7 +296,12 @@ bdh <- function(conn, securities, fields, start_date, end_date = NULL,
       }
     }
 
-    matrix.data <- result$getData()
+    tmp <- result$getData()
+    if (!is.null(tmp))
+      matrix.data <- .jevalArray(tmp, simplify=TRUE)
+    else
+      matrix.data <- NULL
+
     column.names <- result$getColumnNames()
     data.types <- result$getDataTypes()
 
@@ -408,7 +412,12 @@ tick <- function(conn, security, fields, start_date_time, end_date_time,
 ##'
 ##' @keywords internal
 process.result <- function(result, row.name.source = "none") {
-  matrix.data <- result$getData()
+  tmp <- result$getData()
+  if (!is.null(tmp))
+    matrix.data <- .jevalArray(tmp, simplify=TRUE)
+  else
+    matrix.data <- NULL
+
   if (is.null(matrix.data)) return(NULL)
 
   rownames(matrix.data) <- switch(row.name.source,
